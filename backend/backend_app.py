@@ -12,7 +12,35 @@ POSTS = [
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
-    return jsonify(POSTS)
+    """
+    Fetches blog posts with optional sorting.
+
+    Query Parameters:
+    - sort: "title" or "content"
+    - direction: "asc" (default) or "desc"
+
+    Returns:
+    - Sorted posts if parameters are provided.
+    - Original order if no sorting is applied.
+    - 400 Bad Request for invalid parameters.
+    """
+    sort_field = request.args.get('sort', None)
+    direction = request.args.get('direction', 'asc').lower()
+
+    if not sort_field:
+        return jsonify(POSTS), 200
+
+    valid_sort_fields = ["title", "content"]
+    if sort_field not in valid_sort_fields:
+        return jsonify({"error": "Invalid sort field. Use 'title' or 'content'."}), 400
+
+    if direction not in ["asc", "desc"]:
+        return jsonify({"error": "Invalid direction. Use 'asc' or 'desc'."}), 400
+
+    sorted_posts = sorted(POSTS, key=lambda post: post[sort_field], reverse=(direction == "desc"))
+
+    return jsonify(sorted_posts), 200
+
 
 @app.route('/api/posts', methods=['POST'])
 def add_post():
@@ -35,6 +63,7 @@ def add_post():
 
     POSTS.append(new_post)
     return jsonify(new_post), 201
+
 
 @app.route('/api/posts/<int:id>', methods=['DELETE'])
 def delete_post(id):
@@ -110,6 +139,7 @@ def search_posts():
             matching_posts.append(post)
 
     return jsonify(matching_posts), 200
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
