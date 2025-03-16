@@ -87,5 +87,29 @@ def update_post(id):
     return jsonify(post), 200
 
 
+@app.route('/api/posts/search', methods=['GET'])
+def search_posts():
+    """
+    Searches for posts by title or content.
+
+    Clients can provide query parameters 'title' and/or 'content' to search.
+    Returns a list of matching posts, or an empty list if no matches are found.
+    """
+    title = request.args.get('title', None)
+    content = request.args.get('content', None)
+
+    if not title and not content:
+        return jsonify([]), 200
+
+    matching_posts = []
+
+    for post in POSTS:
+        if title and title.lower() in post['title'].lower():
+            matching_posts.append(post)
+        elif content and content.lower() in post['content'].lower():
+            matching_posts.append(post)
+
+    return jsonify(matching_posts), 200
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
